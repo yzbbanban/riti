@@ -12,7 +12,7 @@ function getRfidOrderStock() {
 			return;
 		}
 		getRfidStockData(0, 10);
-		
+
 	});
 };
 /**
@@ -22,7 +22,7 @@ function getRfidOrderStock() {
  * @returns {Boolean}
  */
 function isUnsignedNumeric(a) {
-	var rule = /^[1-9]\d*$/;
+	var rule = /^[0-9]\d*$/;
 	if (!rule.test(a)) {
 		console.log(a);
 		alert("天数请输入数字");
@@ -39,66 +39,76 @@ function isUnsignedNumeric(a) {
  */
 function setSearchData(day) {
 	var stockSetDays = "";
-	var n = day;
-	var d = new Date();
-	var year = d.getFullYear();
-	var mon = d.getMonth() + 1;
-	var day = d.getDate();
-	if (day <= n) {
-		if (mon > 1) {
-			mon = mon - 1;
-		} else {
-			year = year - 1;
-			mon = 12;
+	if (day != 0) {
+		var n = day;
+		var d = new Date();
+		var year = d.getFullYear();
+		var mon = d.getMonth() + 1;
+		var day = d.getDate();
+		if (day <= n) {
+			if (mon > 1) {
+				mon = mon - 1;
+			} else {
+				year = year - 1;
+				mon = 12;
+			}
 		}
+		d.setDate(d.getDate() - n);
+		year = d.getFullYear();
+		mon = d.getMonth() + 1;
+		day = d.getDate();
+		stockSetDays = year + "-" + (mon < 10 ? ('0' + mon) : mon) + "-"
+				+ (day < 10 ? ('0' + day) : day) + " 00:00:00";
+//		console.log("time: " + stockSetDays);
+	} else {
+		stockSetDays = "2080-11-18 00:00:00";
 	}
-	d.setDate(d.getDate() - n);
-	year = d.getFullYear();
-	mon = d.getMonth() + 1;
-	day = d.getDate();
-	stockSetDays = year + "-" + (mon < 10 ? ('0' + mon) : mon) + "-"
-			+ (day < 10 ? ('0' + day) : day)+" 00:00:00";
-//	console.log("time: "+stockSetDays);
 	addCookie("rfidStockSetDays", stockSetDays, 2);
 }
 
 function getRfidStockData(startPage, endPage) {
 	var rfidStockSelect_uid = getCookie("rfidStockSelect_uid");
-	$.ajax({
-		url : "rfidOrder/getRfidOrderList.do",
-		type : "post",
-		data : {
-			"uid" : rfidStockSelect_uid,
-			"startTime" : "1991-05-16 00:00:00",
-			"endTime" : getCookie("rfidStockSetDays"),
-			"startPage" : startPage,
-			"endPage" : endPage,
-			"stockType" : 3
-		// 在仓库
-		},
-		dataType : "json",
-		success : function(result) {
-			var rfidStockTb = $("#rfid_stock_tb");
-			if (result.code == 10000) {
-				getParseRfidStockData(result.result, startPage, endPage,
-						rfidStockTb);
-				if (getCookie("isRfidPageLoading") == 0
-						|| getCookie("isRfidStockUid") != rfidStockSelect_uid) {
-					setRfidStockOrderPaging(result.result.count);
-					addCookie("isRfidStockUid", rfidStockSelect_uid, 2);
-					addCookie("isRfidPageLoading", 1, 2);
-				}
+	var rfidDays = getCookie("rfidStockSetDays");
+	$
+			.ajax({
+				url : "rfidOrder/getRfidOrderList.do",
+				type : "post",
+				data : {
+					"uid" : rfidStockSelect_uid,
+					"startTime" : "1991-05-16 00:00:00",
+					"endTime" : rfidDays,
+					"startPage" : startPage,
+					"endPage" : endPage,
+					"stockType" : 3,
+					"type" : 3
+				// 在仓库
+				},
+				dataType : "json",
+				success : function(result) {
+					var rfidStockTb = $("#rfid_stock_tb");
+					if (result.code == 10000) {
+						getParseRfidStockData(result.result, startPage,
+								endPage, rfidStockTb);
+						if (getCookie("isRfidPageLoading") == 0
+								|| getCookie("isRfidStockSetDays") != rfidDays
+								|| getCookie("isRfidStockUid") != rfidStockSelect_uid) {
+//							console.log("sssssssss_______"+result.result.count);
+							setRfidStockOrderPaging(result.result.count);
+							addCookie("isRfidStockUid", rfidStockSelect_uid, 2);
+							addCookie("isRfidPageLoading", 1, 2);
+							addCookie("isRfidStockSetDays", rfidDays, 2);
+						}
 
-			} else {
-				rfidStockTb.html("");
-				alert(result.message);
-			}
-		},
-		error : function() {
-			setRfidStockOrderPaging(0);
-			alert("此用户无RFID数据");
-		}
-	});
+					} else {
+						rfidStockTb.html("");
+						alert(result.message);
+					}
+				},
+				error : function() {
+					setRfidStockOrderPaging(0);
+					alert("此用户无RFID数据");
+				}
+			});
 }
 function getParseRfidStockData(result, startPage, endPage, rfidStockTb) {
 	rfidStockTb.html("");

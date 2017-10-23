@@ -31,7 +31,7 @@ $(function() {
 				var s_rfid_endTime = getCookie("rfid_select_endTime");
 
 				var rfid_select_startTime = $("#startTime").val() + " 00:00:00";
-				var rfid_select_endTime = $("#endTime").val() + " 00:00:00";
+				var rfid_select_endTime = $("#endTime").val() + " 23:59:59";
 				// if(rfid_select_startTime=="开始时间" ||
 				// rfid_select_endTime=="结束时间"){
 				// alert('请选择时间');

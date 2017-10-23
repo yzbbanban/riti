@@ -64,6 +64,7 @@ public class RfidOrderServiceImpl implements RfidOrderService {
 		} else if (qrp.getType() == 2 && qrp.getStockType() != 0) {// 按照吨桶id查询入,库出库
 			rfidOrders = rfidOrderDAO.getOrderListTaskByRfidName(qrp);
 		} else {// 资产统计
+//			System.out.println("资产 啊啊啊啊啊啊啊啊啊啊啊");
 			isRecent=true;
 			rfidOrders = rfidOrderRecentDAO.getOrderRecentListTaskById(qrp);
 		}
